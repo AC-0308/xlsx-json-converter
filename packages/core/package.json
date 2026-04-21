@@ -1,0 +1,54 @@
+{
+  "name": "@glitches/xlsx-json-converter",
+  "version": "0.0.1",
+  "description": "Excel ↔ JSON 双向转换工具，支持 Schema 配置驱动",
+  "keywords": [
+    "converter",
+    "csv",
+    "excel",
+    "json",
+    "xlsx"
+  ],
+  "license": "MIT",
+  "author": "",
+  "bin": {
+    "xlsx-json-converter": "./bin/cli.mjs"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "chalk": "catalog:production",
+    "commander": "catalog:production",
+    "jiti": "catalog:production",
+    "xlsx": "catalog:production",
+    "zod": "catalog:production"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:development",
+    "tsdown": "catalog:development",
+    "typescript": "catalog:development"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
