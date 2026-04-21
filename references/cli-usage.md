@@ -1,3 +1,8 @@
+---
+name: cli-usage
+description: CLI 命令行参数、输入输出配置
+---
+
 # CLI 使用
 
 ## 命令参数

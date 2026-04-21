@@ -1,3 +1,8 @@
+---
+name: custom-functions
+description: serialize/deserialize 自定义函数
+---
+
 # 自定义函数
 
 ## serialize 函数

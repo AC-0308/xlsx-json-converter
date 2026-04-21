@@ -1,3 +1,8 @@
+---
+name: logging
+description: 彩色控制台日志、文件日志
+---
+
 # 日志系统
 
 ## 控制台日志

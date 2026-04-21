@@ -1,3 +1,8 @@
+---
+name: conversion
+description: Excel→JSON、JSON→Excel 转换逻辑
+---
+
 # 转换核心
 
 ## Excel → JSON

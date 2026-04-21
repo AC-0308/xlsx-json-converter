@@ -1,3 +1,8 @@
+---
+name: schema-config
+description: 字段映射、类型定义、全局配置
+---
+
 # Schema 配置
 
 ## 类型导入
