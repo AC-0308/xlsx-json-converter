@@ -1,6 +1,6 @@
 {
   "name": "@glitches/xlsx-json-converter",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Excel ↔ JSON 双向转换工具，支持 Schema 配置驱动",
   "keywords": [
     "converter",

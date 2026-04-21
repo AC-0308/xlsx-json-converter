@@ -677,6 +677,74 @@ describe("excel2json - Excel 转 JSON 高级功能", () => {
     ).rejects.toThrow();
   });
 
+  it("array + enum 应逐个元素校验", async () => {
+    const inputPath = join(tempDir, "array-enum.xlsx");
+    const outputPath = join(tempDir, "array-enum.json");
+
+    const workbook = XLSX.utils.book_new();
+    const data = [["tags"], ["前端,后端"], ["前端,未知"]];
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+    await writeFile(inputPath, buffer);
+
+    const config: SchemaConfigInput = {
+      fields: [
+        {
+          key: "tags",
+          type: "array" as const,
+          enum: ["前端", "后端", "全栈"],
+          validateStrategy: "warn",
+        },
+      ],
+    };
+
+    const result = await excel2Json({
+      input: inputPath,
+      output: outputPath,
+      config,
+    });
+
+    expect(result.data[0].tags).toEqual(["前端", "后端"]);
+    expect(result.data[1].tags).toEqual(["前端", "未知"]);
+    expect(result.errors.length).toBe(1);
+    expect(result.errors[0].message).toContain("未知");
+  });
+
+  it("array + regex 应逐个元素校验", async () => {
+    const inputPath = join(tempDir, "array-regex.xlsx");
+    const outputPath = join(tempDir, "array-regex.json");
+
+    const workbook = XLSX.utils.book_new();
+    const data = [["phones"], ["13812345678,13912345678"], ["13812345678,invalid"]];
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+    await writeFile(inputPath, buffer);
+
+    const config: SchemaConfigInput = {
+      fields: [
+        {
+          key: "phones",
+          type: "array" as const,
+          regex: "phone",
+          validateStrategy: "warn",
+        },
+      ],
+    };
+
+    const result = await excel2Json({
+      input: inputPath,
+      output: outputPath,
+      config,
+    });
+
+    expect(result.data[0].phones).toEqual(["13812345678", "13912345678"]);
+    expect(result.data[1].phones).toEqual(["13812345678", "invalid"]);
+    expect(result.errors.length).toBe(1);
+    expect(result.errors[0].message).toContain("invalid");
+  });
+
   it("应正确使用自定义 serialize 函数", async () => {
     const inputPath = join(tempDir, "serialize-test.xlsx");
     const outputPath = join(tempDir, "serialize-output.json");

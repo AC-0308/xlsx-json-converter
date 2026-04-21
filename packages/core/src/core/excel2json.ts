@@ -101,23 +101,59 @@ function validateValue(
     return true;
   }
 
-  if (field.enum && !field.enum.includes(String(value))) {
-    const error: ValidationError = {
-      row: rowIndex,
-      field: field.key,
-      message: `字段 "${field.key}" 的值 "${value}" 不在枚举范围内: ${field.enum.join(", ")}`,
-      value,
-    };
-    errors.push(error);
-    if (field.validateStrategy === "error") {
-      throw new Error(`第 ${rowIndex} 行: ${error.message}`);
+  if (field.enum) {
+    if (field.type === "array" && Array.isArray(value)) {
+      const invalidItems = value.filter((item) => !field.enum!.includes(String(item)));
+      if (invalidItems.length > 0) {
+        const error: ValidationError = {
+          row: rowIndex,
+          field: field.key,
+          message: `字段 "${field.key}" 的值 [${invalidItems.join(", ")}] 不在枚举范围内: ${field.enum.join(", ")}`,
+          value,
+        };
+        errors.push(error);
+        if (field.validateStrategy === "error") {
+          throw new Error(`第 ${rowIndex} 行: ${error.message}`);
+        }
+        logger.warn(`第 ${rowIndex} 行: ${error.message}`);
+        return false;
+      }
+    } else if (!field.enum.includes(String(value))) {
+      const error: ValidationError = {
+        row: rowIndex,
+        field: field.key,
+        message: `字段 "${field.key}" 的值 "${value}" 不在枚举范围内: ${field.enum.join(", ")}`,
+        value,
+      };
+      errors.push(error);
+      if (field.validateStrategy === "error") {
+        throw new Error(`第 ${rowIndex} 行: ${error.message}`);
+      }
+      logger.warn(`第 ${rowIndex} 行: ${error.message}`);
+      return false;
     }
-    logger.warn(`第 ${rowIndex} 行: ${error.message}`);
-    return false;
   }
 
-  if (field.regex && typeof value === "string") {
-    if (!validateRegex(value, field.regex)) {
+  if (field.regex) {
+    if (field.type === "array" && Array.isArray(value)) {
+      const invalidItems = value.filter(
+        (item) => typeof item === "string" && !validateRegex(item, field.regex!),
+      );
+      if (invalidItems.length > 0) {
+        const error: ValidationError = {
+          row: rowIndex,
+          field: field.key,
+          message: `字段 "${field.key}" 的值 [${invalidItems.join(", ")}] 不符合正则校验`,
+          value,
+        };
+        errors.push(error);
+        if (field.validateStrategy === "error") {
+          throw new Error(`第 ${rowIndex} 行: ${error.message}`);
+        }
+        logger.warn(`第 ${rowIndex} 行: ${error.message}`);
+        return false;
+      }
+    } else if (typeof value === "string" && !validateRegex(value, field.regex)) {
       const error: ValidationError = {
         row: rowIndex,
         field: field.key,
@@ -141,7 +177,10 @@ export async function excel2Json(
 ): Promise<{ data: Record<string, unknown>[]; errors: ValidationError[] }> {
   const { input, output, config, sheetIndex = 0, sheetName, logFilePath } = options;
 
-  const globalConfig: GlobalConfig = { ...DEFAULT_GLOBAL_CONFIG, ...config.global };
+  const globalConfig: GlobalConfig = {
+    ...DEFAULT_GLOBAL_CONFIG,
+    ...config.global,
+  };
   const logger = createLogger({ logFilePath });
 
   const inputPath = resolvePath(input);
@@ -176,7 +215,9 @@ export async function excel2Json(
     sheet = workbook.Sheets[sheetNameByIndex];
   }
 
-  const jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: undefined });
+  const jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
+    defval: undefined,
+  });
   logger.info(`成功读取 ${jsonData.length} 行数据`);
 
   if (jsonData.length === 0) {
