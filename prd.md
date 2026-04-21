@@ -1,9 +1,9 @@
 # Excel ↔ JSON 双向转换 CLI 工具
 
-**产品需求文档 PRD V1.0**
+**产品需求文档 PRD V1.1**
 
 > 技术规范：ESM + TypeScript、全中文注释、中文日志、Schema 配置驱动
-> 底层依赖：xlsx、commander、chalk、zod、jiti
+> 底层依赖：xlsx、commander、chalk、zod、jiti、tsdown
 
 ---
 
@@ -25,6 +25,17 @@
 - 运营人员编辑 Excel 后一键标准化导出 JSON
 - 导入表格数据自动格式校验、清洗、规范化
 
+### 1.3 依赖包版本
+
+| 包名      | 版本                | 用途            |
+| --------- | ------------------- | --------------- |
+| xlsx      | from sheetjs npm    | Excel/CSV 解析  |
+| commander | catalog:production  | CLI 参数解析    |
+| chalk     | catalog:production  | 彩色终端日志    |
+| jiti      | catalog:production  | TS 配置动态加载 |
+| zod       | catalog:production  | 配置结构化校验  |
+| tsdown    | catalog:development | ESM 打包构建    |
+
 ---
 
 ## 2. 核心功能需求
@@ -43,10 +54,10 @@
 
 ### 2.3 空值统一处理规则
 
-| 转换方向 | 处理规则             |
-|---|------------------|
+| 转换方向     | 处理规则               |
+| ------------ | ---------------------- |
 | Excel → JSON | 空单元格 → `undefined` |
-| JSON → Excel | 空值 → 空白单元格       |
+| JSON → Excel | 空值 → 空白单元格      |
 
 ### 2.4 Schema 配置系统
 
@@ -56,32 +67,32 @@
 
 #### 单字段可配置项
 
-| 配置项            | 说明                                                     |
-|----------------|--------------------------------------------------------|
-| key            | Excel 表头名称 ↔ JSON key 映射 |
-| type           | 字段类型：string / number / boolean / array                 |
-| arraySeparator | 数组分隔符（默认英文逗号）                                          |
-| enum           | 枚举值白名单校验                                               |
-| regex          | 正则校验（内置手机号、邮箱、身份证、URL 等常用预设）                           |
-| required       | 必填项校验                                                  |
-| serialize      | 自定义序列化函数：Excel 单元格 → JSON                              |
-| deserialize    | 自定义反序列化函数：JSON → Excel 单元格                             |
+| 配置项         | 说明                                                 |
+| -------------- | ---------------------------------------------------- |
+| key            | Excel 表头名称 ↔ JSON key 映射                       |
+| type           | 字段类型：string / number / boolean / array          |
+| arraySeparator | 数组分隔符（默认英文逗号）                           |
+| enum           | 枚举值白名单校验                                     |
+| regex          | 正则校验（内置手机号、邮箱、身份证、URL 等常用预设） |
+| required       | 必填项校验                                           |
+| serialize      | 自定义序列化函数：Excel 单元格 → JSON                |
+| deserialize    | 自定义反序列化函数：JSON → Excel 单元格              |
 
 ### 2.5 数据校验策略
 
 - **支持校验类型**：类型校验、必填校验、枚举校验、正则格式校验
 - **异常处理策略可配置**：
 
-| 策略 | 说明 |
-|---|---|
-| warn | 警告打印日志，继续生成转换文件（默认） |
-| error | 抛出异常，终止转换流程 |
+| 策略  | 说明                                   |
+| ----- | -------------------------------------- |
+| warn  | 警告打印日志，继续生成转换文件（默认） |
+| error | 抛出异常，终止转换流程                 |
 
 ### 2.6 日志系统
 
 - **控制台输出**：彩色日志（成功绿色、警告黄色、错误红色）
 - **支持日志文件导出**：可通过 CLI 参数 / 配置文件指定日志保存路径
-- **日志内容包含**：时间戳、日志级别、异常详情
+- **日志内容包含**：时间��、日志级别、异常详情
 
 ### 2.7 JSON 输出格式
 
@@ -91,7 +102,7 @@
 ### 2.8 CLI 命令参数
 
 ```bash
-node cli.mjs \
+xlsx-json-converter \
   --input 输入文件路径 \
   --output 输出文件路径 \
   --config schema配置文件 \
@@ -141,40 +152,22 @@ export default {
 
 ### 4.1 技术栈
 
-| 技术 | 用途                                                                          |
-|---|-----------------------------------------------------------------------------|
-| pnpm | 包管理工具                                                                        |
-| TypeScript ESM | 编程语言                                                                        |
-| ESLint | 代码检查，采用 antfu/eslint-config TypeScript 配置                              |
-| xlsx（SheetJS） | Excel/CSV 解析，需从官方源安装：`pnpm install xlsx --registry https://sheetjs.com/npm` |
-| commander | CLI 参数解析                                                                    |
-| chalk | 彩色终端日志                                                                      |
-| jiti | TS 配置动态加载                                                                   |
-| zod | 配置结构化校验                                                                     |
-| node fs/promises、path | 文件系统                                                                        |
+| 技术                   | 用途                                                                                   |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| pnpm                   | 包管理工具（workspace）                                                                |
+| TypeScript ESM         | 编程语言                                                                               |
+| oxlint                 | 代码检查，采用 antfu/oxlint TypeScript 配置                                            |
+| xlsx（SheetJS）        | Excel/CSV 解析，需从官方源安装：`pnpm install xlsx --registry https://sheetjs.com/npm` |
+| commander              | CLI 参数解析                                                                           |
+| chalk                  | 彩色终端日志                                                                           |
+| jiti                   | TS 配置动态加载                                                                        |
+| zod                    | 配置结构化校验                                                                         |
+| tsdown                 | ESM 模块打包                                                                           |
+| node fs/promises、path | 文件系统                                                                               |
 
-### 4.2 推荐目录结构
+### 4.2 发布配置
 
-```
-├── bin/                  # CLI 入口文件
-│   └── cli.mjs           # 软链至 package.json bin 字段
-├── src/
-│   ├── config/           # 默认配置、配置合并逻辑
-│   ├── core/             # 双向转换核心业务逻辑
-│   │   ├── excel2json.ts
-│   │   └── json2excel.ts
-│   ├── schema/           # Zod 配置结构定义
-│   ├── utils/            # 日志、路径、正则预设、通用工具
-│   ├── cli.ts            # CLI 命令入口
-│   └── index.ts          # 库对外主入口
-├── package.json        # 发布配置（bin 字段指向 bin/cli.mjs）
-├── pnpm-workspace.yaml # pnpm 工作区配置
-└── tsconfig.json       # TypeScript 配置
-```
-
-### 4.3 发布配置
-
-- **调用方式**：`npx <package-name>`
+- **调用方式**：`npx @glitches/xlsx-json-converter`
 - **bin 字段**：软链 `bin/cli.mjs`
 - **入口文件**：使用 `.mjs` 扩展名直接执行，无需额外构建步骤
 
@@ -202,11 +195,3 @@ export default {
 - [x] 日志彩色正常显示，指定路径可写入日志文件
 
 ---
-
-## 7. 后续迭代规划
-
-| 版本 | 规划内容 |
-|---|---|
-| V2.0 | 扩展更多正则预设、字段长度校验、自定义格式化规则 |
-| V3.0 | 支持批量文件夹批量转换 |
-| V4.0 | 支持多工作表批量映射转换 |
